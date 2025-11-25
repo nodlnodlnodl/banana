@@ -1,7 +1,5 @@
 import 'dart:math';
 import 'package:banana/gif_glass_avatar_skip2.dart';
-import 'package:banana/glass_gif.dart';
-import 'package:banana/main2.dart';
 import 'package:flutter/material.dart';
 
 void main() {
