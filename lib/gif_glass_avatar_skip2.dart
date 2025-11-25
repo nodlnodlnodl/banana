@@ -30,7 +30,10 @@ class _GifGlassAvatarState extends State<GifGlassAvatar> {
   // Считает средний цвет первого кадра GIF (сэмплируем через шаг sampleStep)
   Future<void> _loadAverageColor() async {
     try {
-      final color = await _computeAverageColorFromAsset(widget.gifAsset, sampleStep: 4);
+      final color = await _computeAverageColorFromAsset(
+        widget.gifAsset,
+        sampleStep: 4,
+      );
       if (!mounted) return;
       setState(() => _avgColor = color);
     } catch (_) {
@@ -38,7 +41,10 @@ class _GifGlassAvatarState extends State<GifGlassAvatar> {
     }
   }
 
-  Future<Color> _computeAverageColorFromAsset(String assetPath, {int sampleStep = 4}) async {
+  Future<Color> _computeAverageColorFromAsset(
+    String assetPath, {
+    int sampleStep = 4,
+  }) async {
     final data = await rootBundle.load(assetPath);
     final bytes = data.buffer.asUint8List();
 
@@ -78,18 +84,6 @@ class _GifGlassAvatarState extends State<GifGlassAvatar> {
     );
   }
 
-  Color _darken(Color c, double amount) {
-    final hsl = HSLColor.fromColor(c);
-    final l = (hsl.lightness - amount).clamp(0.0, 1.0);
-    return hsl.withLightness(l).toColor();
-  }
-
-  Color _lighten(Color c, double amount) {
-    final hsl = HSLColor.fromColor(c);
-    final l = (hsl.lightness + amount).clamp(0.0, 1.0);
-    return hsl.withLightness(l).toColor();
-  }
-
   @override
   Widget build(BuildContext context) {
     final size = widget.size;
@@ -97,36 +91,22 @@ class _GifGlassAvatarState extends State<GifGlassAvatar> {
     // Базовый цвет из гифки (если не успел посчитаться — аккуратный дефолт)
     final base = _avgColor ?? const Color(0xFF888888);
 
-    // Производим оттенки из базового
-    final shadowColor = _darken(base, 0.35).withOpacity(0.30);  // основная тень
-    final ambientColor = _darken(base, 0.15).withOpacity(0.18); // мягкий ореол
-    final rimLight = _lighten(base, 0.45).withOpacity(0.55);    // светлый кант
+    // ОДИН цвет тени = просто средний цвет с прозрачностью
+    final shadowColor = base.withOpacity(0.45);
 
     return Stack(
       alignment: Alignment.center,
       children: [
-        // ТЕНЬ ВОКРУГ КРУГА (цвета берутся из гифки)
+        // ТЕНЬ ВОКРУГ КРУГА (просто средний цвет картинки)
         DecoratedBox(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
                 color: shadowColor,
-                blurRadius: size * 0.05,
-                spreadRadius: size * 0.00,
-                offset: Offset(0, size * 0.04),
-              ),
-              BoxShadow(
-                color: ambientColor,
-                blurRadius: size * 0.10,
+                blurRadius: size * 0.35,
                 spreadRadius: size * 0.05,
-                offset: Offset(0, size * 0.04),
-              ),
-              BoxShadow(
-                color: rimLight,
-                blurRadius: size * 0.22,
-                spreadRadius: -size * 0.06,
-                offset: const Offset(0, -2),
+                offset: Offset(0, size * 0.08),
               ),
             ],
           ),
@@ -145,8 +125,8 @@ class _GifGlassAvatarState extends State<GifGlassAvatar> {
 
         // Эффект “liquid glass” поверх
         LiquidGlassLayer(
-          settings: const LiquidGlassSettings(
-            thickness: 70,
+          settings: LiquidGlassSettings(
+            thickness: size * 0.3,
             blur: 0,
             glassColor: Color(0x33FFFFFF),
             lightIntensity: 1.3,
